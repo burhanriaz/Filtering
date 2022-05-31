@@ -1,25 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Filtering.Custom_Filter
 {
+   
     public class ResponseAttribute : ActionFilterAttribute,IActionFilter
     {
-        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-        {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-            //Task.Delay(2000).Wait();
-            await next();
-
-            stopwatch.Stop();
-
-            var time = stopwatch.ElapsedMilliseconds;
-            context.HttpContext.Response.Headers.Add("ExcuationTime", time.ToString());
-            //context.HttpContext.Response.Headers.Add("ExcuationTime", stopwatch.ElapsedMilliseconds.ToString());
-
-        }
         public override void OnActionExecuted(ActionExecutedContext filterContext)
         {
 
@@ -28,6 +18,10 @@ namespace Filtering.Custom_Filter
 
             var actionName = filterContext.RouteData.Values["action"].ToString();
             filterContext.HttpContext.Response.Headers.Add("ActionName", actionName);
+
+
+            var MethodName = filterContext.HttpContext.Request.Method;
+            filterContext.HttpContext.Response.Headers.Add("MethodName", MethodName);
 
             var scheme = filterContext.HttpContext.Request.Scheme;
             filterContext.HttpContext.Response.Headers.Add("schemeName", scheme);
@@ -43,10 +37,26 @@ namespace Filtering.Custom_Filter
 
             string DateTime = System.DateTime.Now.ToString();
             filterContext.HttpContext.Response.Headers.Add("DateTime", DateTime);
-        
+
 
             base.OnActionExecuted(filterContext);
         }
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+     
+        Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //Task.Delay(2000).Wait();
+            await next();
+
+            stopwatch.Stop();
+
+            var time = stopwatch.ElapsedMilliseconds;
+            context.HttpContext.Response.Headers.Add("ExcuationTime", time.ToString());
+            //context.HttpContext.Response.Headers.Add("ExcuationTime", stopwatch.ElapsedMilliseconds.ToString());
+
+        }
+       
 
         //public class ProcessingTimeMiddleware
         //{
@@ -76,14 +86,6 @@ namespace Filtering.Custom_Filter
 
         //        await _next(filterContext);
         //    }
-
-
-
-
-
     }
-
-
-
 }
 
