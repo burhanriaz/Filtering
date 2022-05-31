@@ -19,7 +19,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseMiddleware<ProcessingTimeMiddleware>();
+//app.UseMiddleware<ProcessingTimeMiddleware>();
 
 app.UseHttpsRedirection();
 

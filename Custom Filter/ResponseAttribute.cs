@@ -1,12 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Filtering.Custom_Filter
 {
-    public class ResponseAttribute : ActionFilterAttribute
+    public class ResponseAttribute : ActionFilterAttribute,IActionFilter
     {
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            //Task.Delay(2000).Wait();
+            await next();
+
+            stopwatch.Stop();
+
+            var time = stopwatch.ElapsedMilliseconds;
+            context.HttpContext.Response.Headers.Add("ExcuationTime", time.ToString());
+            //context.HttpContext.Response.Headers.Add("ExcuationTime", stopwatch.ElapsedMilliseconds.ToString());
+
+        }
         public override void OnActionExecuted(ActionExecutedContext filterContext)
         {
+
             var controllerName = filterContext.RouteData.Values["controller"].ToString();
             filterContext.HttpContext.Response.Headers.Add("ControlerName", controllerName);
 
@@ -27,55 +43,47 @@ namespace Filtering.Custom_Filter
 
             string DateTime = System.DateTime.Now.ToString();
             filterContext.HttpContext.Response.Headers.Add("DateTime", DateTime);
+        
 
-            var watch = new Stopwatch();
-
-            //filterContext.HttpContext.Response.OnStarting.Subscribe(watch.Elapsed);
-            //{ watch.Stop();
-            //    filterContext.HttpContext.Response.Headers.Add("ExcuationTime",
-            //                    new[] { (watch.ElapsedMilliseconds).ToString() });
-            //}
-            
-
-                base.OnActionExecuted(filterContext);
+            base.OnActionExecuted(filterContext);
         }
 
-        public class ProcessingTimeMiddleware
-        {
-            private readonly RequestDelegate _next;
+        //public class ProcessingTimeMiddleware
+        //{
+        //    private readonly RequestDelegate _next;
 
-            public ProcessingTimeMiddleware(RequestDelegate next)
-            {
-                _next = next;
-            }
+        //    public ProcessingTimeMiddleware(RequestDelegate next)
+        //    {
+        //        _next = next;
+        //    }
 
-            public async Task Invoke(HttpContext filterContext)
-            {
-                var watch = new Stopwatch();
+        //    public async Task Invoke(HttpContext filterContext)
+        //    {
+        //        var watch = new Stopwatch();
 
-                filterContext.Response.OnStarting(() =>
-                {
-                    
-                    watch.Stop();
+        //        filterContext.Response.OnStarting(() =>
+        //        {
 
-                    filterContext.Response.Headers.Add("ExcuationTime",
-                                    new[] { (watch.ElapsedMilliseconds).ToString() });
+        //            watch.Stop();
 
-                    return Task.CompletedTask;
-                });
+        //            filterContext.Response.Headers.Add("ExcuationTime",
+        //                            new[] { (watch.ElapsedMilliseconds).ToString() });
 
-                watch.Start();
+        //            return Task.CompletedTask;
+        //        });
 
-                await _next(filterContext);
-            }
+        //        watch.Start();
 
-        }
+        //        await _next(filterContext);
+        //    }
+
+
 
 
 
     }
-      
 
 
-    }
+
+}
 
